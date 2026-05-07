@@ -7,10 +7,10 @@ SELECT
     SUM(oi.quantity) AS total_sold
 FROM order_items oi
 INNER JOIN orders o
-    ON oi.order_id = p.id
+    ON oi.order_id = o.id
 INNER JOIN products p
     ON oi.product_id = p.id
-WHERE o.status = 'completed'
+WHERE o.order_status = 'completed'
 GROUP BY p.id, p.name, p.price
 ORDER BY total_sold DESC
 LIMIT 10;
@@ -41,14 +41,23 @@ WHERE category = $1;
 
 -- Top category per month
 
-SELECT
-    o.id,
-    o.total_item,
-    o.total_price,
-    o.order_status,
-    o.created_at
-FROM orders o
-WHERE o.order_status = 'completed'
-INNER JOIN products p
-
+SELECT month, category, total_revenue
+FROM(
+    SELECT
+        DATE_TRUNC('month', o.created_at) AS month, p.category,
+        SUM(oi.quantity * oi.price_at_time) AS total_revenue,
+        RANK() OVER(
+            PARTITION BY DATE_TRUNC('month', o.created_at)
+            ORDER BY SUM(oi.quantity * oi.price_at_time) DESC
+        ) AS rank
+    FROM order_items oi
+    INNER JOIN orders o
+        ON oi.order_id = o.id
+    INNER JOIN products p
+        ON oi.product_id = p.id
+    WHERE o.order_status = 'completed'
+    GROUP BY month, p.category
+) ranked
+WHERE rank = 1
+ORDER BY month;
 
