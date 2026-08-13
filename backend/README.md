@@ -97,8 +97,8 @@ DEBUG=True
 ## 1. Clone Repository
 
 ```bash
-git clone <your-repo-url>
-cd <project-folder>
+git clone https://github.com/SahilYatam/E-commerce-Analytics-Project
+cd backend
 ```
 
 ---
